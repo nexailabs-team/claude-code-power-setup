@@ -117,17 +117,6 @@ Create or edit `~/.claude/settings.json`:
         ]
       }
     ],
-    "PostToolUse": [
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "{{HOME_PATH}}/.claude/hooks/auto-push-after-commit.sh"
-          }
-        ]
-      }
-    ],
     "TeammateIdle": [
       {
         "hooks": [
@@ -179,7 +168,6 @@ Create or edit `~/.claude/settings.json`:
 | `ENABLE_LSP_TOOL` | Language Server Protocol for type checking |
 | `permissions.deny` | Blocks dangerous commands (rm -rf, reading SSH keys, reading .env) |
 | `hooks.PreToolUse` | Runs BEFORE Claude executes a command (safety checks) |
-| `hooks.PostToolUse` | Runs AFTER Claude executes a command (auto-push) |
 | `hooks.TeammateIdle` | Pokes idle teammates to keep working |
 | `hooks.TaskCompleted` | Verifies deliverables before marking tasks done |
 | `effortLevel: "high"` | Claude thinks harder, doesn't cut corners |
@@ -229,26 +217,11 @@ fi
 exit 0
 ```
 
-### Hook 3: auto-push-after-commit.sh
-Auto-pushes to remote after every commit (keeps your repo synced).
-
-```bash
-#!/usr/bin/env bash
-# Auto-pushes to remote after a successful git commit.
-# Input: PostToolUse JSON on stdin. Exit 0 = no-op (informational hook).
-
-INPUT=$(cat)
-cmd=$(echo "$INPUT" | tr -d '\r' | python3 -c "import sys,json; print(json.load(sys.stdin).get('tool_input',{}).get('command',''))" 2>/dev/null || echo "$INPUT" | tr -d '\r' | python -c "import sys,json; print(json.load(sys.stdin).get('tool_input',{}).get('command',''))" 2>/dev/null)
-
-if [[ "$cmd" =~ git[[:space:]]+commit ]] && ! [[ "$cmd" =~ --amend[[:space:]]*$ ]]; then
-  branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)
-  remote=$(git config --get "branch.${branch}.remote" 2>/dev/null)
-  if [[ -n "$remote" ]]; then
-    git push "$remote" "$branch" 2>/dev/null &
-  fi
-fi
-exit 0
-```
+### Hook 3: (removed) auto-push-after-commit.sh
+This setup used to ship a hook that ran `git push` after every commit. It was removed in Oct 2026: it pushed whatever
+branch was checked out, `main` included, and because a hook's push is not a tool call it never shows up in the
+chat transcript. An agent committing on `main` could send unreviewed work straight to whatever deploys from it.
+Push explicitly, and let branch protection (PR-only `main`) do the guarding.
 
 ### Hook 4: teammate-idle-check.sh
 Prevents agent teammates from going idle when they have unfinished tasks.
@@ -709,7 +682,6 @@ After setup, test each component:
 - [ ] `claude "read my CLAUDE.md and tell me my role"` — confirms it reads your instructions
 - [ ] Try `git add .` inside Claude — should be **blocked** by hook
 - [ ] Try `git push --force main` — should be **blocked** by hook
-- [ ] Make a commit — should auto-push to remote
 - [ ] `/standup` — shows task briefing
 - [ ] `/delegate ops "test task"` — adds task to TASKS.md
 - [ ] `/ops-status` — shows task dashboard

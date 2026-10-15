@@ -18,7 +18,7 @@ This is the exact setup that runs [NexAI Labs](https://nexailabs.com) — hooks,
 ### Ready-to-Use Components
 | Directory | Contents |
 |-----------|---------|
-| [hooks/](hooks/) | 5 safety hook scripts (block force-push, block broad git add, auto-push, idle check, task verify) |
+| [hooks/](hooks/) | 4 safety hook scripts (block force-push, block broad git add, idle check, task verify) |
 | [skills/](skills/) | 7 skill templates (/standup, /log, /delegate, /discuss, /verify-work, /quick, /ops-status) |
 | [agents/](agents/) | 3 agent templates (lead, worker, researcher) with model tiering |
 | [statusline.ps1](statusline.ps1) | Custom status line (model, context %, tokens, cost) |
@@ -63,7 +63,6 @@ cp statusline.ps1 ~/.claude/
 - **Multi-agent teams** — Opus leads, Sonnet executes, Haiku handles bulk. Each agent has a specific domain.
 - **GSD Hybrid workflow** — Discuss -> Plan -> Execute -> Verify. Lean markdown, no XML bloat.
 - **Context protocol** — STATE.md (position), CONTEXT.md (locked decisions), LESSONS.md (self-improvement)
-- **Auto-push** — Every commit auto-pushes to remote.
 - **Ecosystem** — Curated CLI tools, plugins, MCP servers, frameworks. See [ECOSYSTEM.md](ECOSYSTEM.md).
 - **Prompt engineering** — Battle-tested context engineering frameworks. See [prompts/](prompts/).
 
